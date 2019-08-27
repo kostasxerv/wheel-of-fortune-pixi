@@ -20,25 +20,21 @@ window.onload = function() {
     // game configuration object
     var gameConfig = {
        // game width, in pixels
-       width: 550,
+       width: 800,
 
        // game height, in pixels
-       height: 550,
+       height: 600,
 
        // game background color
        backgroundColor: 0x880044,
-
-       // scenes used by the game
-      //  scene: [playGame]
     };
 
     // game constructor
-    // game = new Phaser.Game(gameConfig);
-    game = new PIXI.Application({width: 550, height: 550})
+    game = new PIXI.Application(gameConfig)
     document.body.appendChild(game.view)
     game.config = {
-      width: 550,
-      height: 550
+      width: gameConfig.width,
+      height: gameConfig.height
     }
     // pure javascript to give focus to the page/frame and scale the game
     window.focus()
@@ -106,9 +102,6 @@ class WheelOfFortune extends PIXI.Container{
         this.prizeText.x = game.config.width / 2
         this.prizeText.y = 20
 
-        // center the text
-        // this.prizeText.setOrigin(0.5);
-
         // the game has just started = we can spin the wheel
         this.canSpin = true;
 
@@ -136,15 +129,14 @@ class WheelOfFortune extends PIXI.Container{
 
             // now the wheel cannot spin because it's already spinning
             this.canSpin = false;
-            console.log( 360 * rounds + degrees,)
-            const rad = (360 * rounds + degrees) * Math.PI / 180
-            // animation tweeen for the spin: duration 3s, will rotate by (360 * rounds + degrees) degrees
+
+            const rads = (360 * rounds + degrees) * Math.PI / 180
+
             this.wheel.rotation = 0
             this.tween = TweenMax.to(this.wheel, 3, {
-              rotation: rad,
+              rotation: rads,
               ease: Power3.easeOut,
-              onComplete: (tween) => {
-
+              onComplete: () => {
                   // displaying prize text
                   this.prizeText.setText(gameOptions.slicePrizes[prize]);
 
