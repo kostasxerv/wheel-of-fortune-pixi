@@ -10,7 +10,7 @@ var gameOptions = {
     slicePrizes: ["A KEY!!!", "50 STARS", "500 STARS", "BAD LUCK!!!", "200 STARS", "100 STARS", "150 STARS", "BAD LUCK!!!"],
 
     // wheel rotation duration, in milliseconds
-    rotationTime: 3000
+    rotationTime: 3
 }
 
 
@@ -51,16 +51,16 @@ class WheelOfFortune extends PIXI.Container{
     constructor(container){
         super();
         this.load = PIXI.loader
-        this.preload(this.attach.bind(this)(container))
+
+        if(container){
+          container.addChild(this)
+        }
+        this.preload(this.create.bind(this))
+
         this.interactive = true
         this.buttonMode = true
     }
-    attach(container){
-      container.addChild(this)
-      this.create()
-    }
-
-    // method to be executed when the scene preloads
+    // method to load resources
     preload(callback){
         // loading assets
         if(!this.load.resources.wheel){
@@ -78,7 +78,6 @@ class WheelOfFortune extends PIXI.Container{
 
     // method to be executed once the scene has been created
     create(){
-
         // adding the wheel in the middle of the canvas
         this.wheel = this.addChild(new PIXI.Sprite.fromImage('wheel.png'))
         this.wheel.x = game.config.width / 2
@@ -130,10 +129,13 @@ class WheelOfFortune extends PIXI.Container{
             // now the wheel cannot spin because it's already spinning
             this.canSpin = false;
 
+            // convert degrees to rads
             const rads = (360 * rounds + degrees) * Math.PI / 180
 
-            this.wheel.rotation = 0
-            this.tween = TweenMax.to(this.wheel, 3, {
+            // reset the rads rotation of the wheel
+            this.wheel.rotation = 0 
+            // use tweenmax to spin
+            this.tween = TweenMax.to(this.wheel, gameOptions.rotationTime, {
               rotation: rads,
               ease: Power3.easeOut,
               onComplete: () => {
