@@ -1,0 +1,26 @@
+{
+  "name": "wheelOfFortune",
+  "version": "1.0.0",
+  "description": "",
+  "main": "game.js",
+  "dependencies": {
+    "express": "^4.17.1",
+    "open": "^6.4.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kostasxerv/wheel-of-fortune---pixi.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kostasxerv/wheel-of-fortune---pixi/issues"
+  },
+  "homepage": "https://github.com/kostasxerv/wheel-of-fortune---pixi#readme"
+}

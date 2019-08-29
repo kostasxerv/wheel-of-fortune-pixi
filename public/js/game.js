@@ -4,10 +4,10 @@ var game;
 var gameOptions = {
 
     // slices (prizes) placed in the wheel
-    slices: 8,
+    slices: 9,
 
     // prize names, starting from 12 o'clock going clockwise
-    slicePrizes: ["A KEY!!!", "50 STARS", "500 STARS", "BAD LUCK!!!", "200 STARS", "100 STARS", "150 STARS", "BAD LUCK!!!"],
+    slicePrizes: [10, 20 ,10, 15, 10, 15, 20, 10, 15],
 
     // wheel rotation duration, in milliseconds
     rotationTime: 3
@@ -41,6 +41,7 @@ window.onload = function() {
     resize();
     window.addEventListener("resize", resize, false);
     game.wof = new WheelOfFortune(game.stage)
+    window.addEventListener('keydown', (e) => game.wof.spinWheel())
 }
 
 
@@ -64,10 +65,10 @@ class WheelOfFortune extends PIXI.Container{
     preload(callback){
         // loading assets
         if(!this.load.resources.wheel){
-          this.load.add("wheel", "wheel.png");
+          this.load.add("wheel", "../assets/wheel.png");
         }
         if(!this.load.resources.pin){
-          this.load.add("pin", "pin.png");
+          this.load.add("pin", "../assets/pin.png");
         }
 
         this.load.load()
@@ -79,15 +80,16 @@ class WheelOfFortune extends PIXI.Container{
     // method to be executed once the scene has been created
     create(){
         // adding the wheel in the middle of the canvas
-        this.wheel = this.addChild(new PIXI.Sprite.fromImage('wheel.png'))
+        this.wheel = this.addChild(new PIXI.Sprite.fromImage('wheel'))
         this.wheel.x = game.config.width / 2
         this.wheel.y = game.config.height / 2
         this.wheel.anchor.set(0.5)
+        this.wheel.scale = {x: 0.8, y: 0.8}
 
         // adding the pin in the middle of the canvas
-        this.pin = this.addChild(new PIXI.Sprite.fromImage('pin.png'))
+        this.pin = this.addChild(new PIXI.Sprite.fromImage('pin'))
         this.pin.x = game.config.width / 2
-        this.pin.y = game.config.height / 2
+        this.pin.y = 535
         this.pin.anchor.set(0.5)
         
         // adding the text field
@@ -99,7 +101,7 @@ class WheelOfFortune extends PIXI.Container{
         }));
         this.prizeText.anchor.set(0.5)
         this.prizeText.x = game.config.width / 2
-        this.prizeText.y = 20
+        this.prizeText.y = 35
 
         // the game has just started = we can spin the wheel
         this.canSpin = true;
@@ -109,11 +111,11 @@ class WheelOfFortune extends PIXI.Container{
     }
 
     // function to spin the wheel
-    spinWheel(){
+    spinWheel(deg){
 
         // can we spin the wheel?
         if(this.canSpin){
-
+            if(isNaN(deg)) deg = null
             // resetting text field
             this.prizeText.setText("");
 
@@ -121,7 +123,7 @@ class WheelOfFortune extends PIXI.Container{
             var rounds = Math.max(2, Math.floor(Math.random() * 4))
 
             // then will rotate by a random number from 0 to 360 degrees. This is the actual spin
-            var degrees = Math.floor(Math.random() * 360);
+            var degrees = deg || Math.floor(Math.random() * 360)
 
             // before the wheel ends spinning, we already know the prize according to "degrees" rotation and the number of slices
             var prize = gameOptions.slices - 1 - Math.floor(degrees / (360 / gameOptions.slices));
@@ -136,8 +138,8 @@ class WheelOfFortune extends PIXI.Container{
             this.wheel.rotation = 0 
             // use tweenmax to spin
             this.tween = TweenMax.to(this.wheel, gameOptions.rotationTime, {
-              rotation: rads,
-              ease: Power3.easeOut,
+              rotation: rads + 3.3, // add half cycle to display correct result (this depends on the position of the marker)
+              ease: Power4.easeOut,
               onComplete: () => {
                   // displaying prize text
                   this.prizeText.setText(gameOptions.slicePrizes[prize]);
@@ -146,6 +148,10 @@ class WheelOfFortune extends PIXI.Container{
                   this.canSpin = true;
               }
             })
+            // this emulates the pin  bouncing left-right
+            // var tl = new TimelineMax({ repeat: 9, ease: Power4.easeOut, onComplete: () => TweenMax.to(this.pin, 0.08, { rotation: 0 })})
+            //   .to(this.pin, 0.07, { rotation: -0.1 })
+            //   .to(this.pin, 0.07, { rotation: 0.1 })
         }
     }
 }
