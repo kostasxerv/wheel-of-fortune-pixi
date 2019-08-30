@@ -156,7 +156,7 @@ class WheelOfFortune extends PIXI.Container {
     }
 
     // convert degrees to rads cause pixi rotation works with rads
-    const rads = ((360 * rounds + degrees) * Math.PI / 180)
+    const rads = ((360 * rounds + degrees) * Math.PI / 180) + Math.PI + 0.314 // add percent of cycle in rads to display correct result (this depends on the position of the marker)
 
     // before the wheel ends spinning, we already know the prize according to "degrees" rotation and the number of slices
     var prize = gameOptions.slices - 1 - Math.floor(degrees / (360 / gameOptions.slices))
@@ -167,11 +167,9 @@ class WheelOfFortune extends PIXI.Container {
     let edge = 1
     // use tweenmax to spin
     this.tween = TweenMax.to(this.wheel, gameOptions.rotationTime, {
-      rotation: rads + 0.314, // add percent of cycle in rads to display correct result (this depends on the position of the marker)
+      rotation: rads,
       ease: Power1.easeOut,
       onUpdate: function () {
-        // const pos = (parseInt(this.target.rotation * 180 / Math.PI) / (360 / gameOptions.slices))
-        // console.log((parseInt(this.target.rotation * 180 / Math.PI) / (360 / gameOptions.slices) * edge))
         if ((parseInt((this.target.rotation + 0.314) * 180 / Math.PI) >= (360 / gameOptions.slices) * edge)) {
           tl.restart()
           edge++
@@ -203,13 +201,13 @@ class WheelOfFortune extends PIXI.Container {
       rotation: 30, // add percent of cycle in rads to display correct result (this depends on the position of the marker)
       ease: Linear.easeNone,
       onUpdate: function () {
-        const rads = this.target.rotation - 0.314
-        let degrees = (rads * 180 / Math.PI)
-        degrees = degrees - 360 * Math.floor((degrees / 360))
+        // const rads = this.target.rotation - 0.314
+        // let degrees = (rads * 180 / Math.PI)
+        // degrees = degrees - 360 * Math.floor((degrees / 360))
 
-        var prize = gameOptions.slices - 1 - Math.floor(degrees / (360 / gameOptions.slices))
-        _this.prizeText.setText(gameOptions.slicePrizes[prize])
-        console.log(gameOptions.slicePrizes[prize], rads, degrees, prize)
+        // var prize = gameOptions.slices - 1 - Math.floor(degrees / (360 / gameOptions.slices))
+        // _this.prizeText.setText(gameOptions.slicePrizes[prize])
+        // console.log(gameOptions.slicePrizes[prize], rads, degrees, prize)
       },
       onComplete: () => {
         // displaying prize text
