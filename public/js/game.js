@@ -148,7 +148,7 @@ class WheelOfFortune extends PIXI.Container{
                   this.canSpin = true;
               }
             })
-            // this emulates the pin  bouncing left-right
+            // this emulates the pin bouncing left-right
             // var tl = new TimelineMax({ repeat: 9, ease: Power4.easeOut, onComplete: () => TweenMax.to(this.pin, 0.08, { rotation: 0 })})
             //   .to(this.pin, 0.07, { rotation: -0.1 })
             //   .to(this.pin, 0.07, { rotation: 0.1 })
