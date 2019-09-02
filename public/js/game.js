@@ -2,27 +2,12 @@
 // the game itself
 var game
 
-var gameOptions = {
-
-  // slices (prizes) placed in the wheel
-  get slices () {
-    return this.slicePrizes.length
-  },
-
-  // prize names, starting from 12 o'clock going clockwise
-  slicePrizes: [80, 100, 5000, 1000, 80, 1000, 200, 500, 80, 1000],
-
-  // wheel rotation duration, in milliseconds
-  rotationTime: 5
-}
-
 // once the window loads...
 window.onload = function () {
   // game configuration object
   var gameConfig = {
     // game width, in pixels
     width: 1280,
-
     // game height, in pixels
     height: 720
   }
@@ -38,24 +23,28 @@ window.onload = function () {
   window.focus()
   resize()
   window.addEventListener('resize', resize, false)
-  game.wof = new WheelOfFortune(game.stage)
+  game.wof = new WheelOfFortune()
+  game.stage.addChild(game.wof)
   window.addEventListener('keydown', (e) => game.wof.spinWheel())
 }
 
 // Wheel Of Fortune scene
 class WheelOfFortune extends PIXI.Container {
   // constructor
-  constructor (container) {
+  constructor () {
     super()
     this.load = PIXI.loader
 
-    if (container) {
-      container.addChild(this)
-    }
+    this.rotationTime = 5
+    this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, 10, 1000]
     this.preload(this.create.bind(this))
 
     this.interactive = true
     this.buttonMode = true
+  }
+
+  get slices () {
+    return this.slicePrizes.length
   }
 
   // method to load resources
@@ -134,9 +123,6 @@ class WheelOfFortune extends PIXI.Container {
     centralFrame.x = 1280 / 2 - centralFrame.width / 2
     centralFrame.y = 720 / 2 - centralFrame.height / 2
 
-    // winHl.x = -winHl.width / 2
-    // winHl.y = -winHl.height - 25
-
     // the game has just started = we can spin the wheel
     this.canSpin = true
 
@@ -167,7 +153,7 @@ class WheelOfFortune extends PIXI.Container {
     degrees = degrees - 360 * Math.floor((degrees / 360))
 
     // fix consflict result between 2 slices
-    if (Number.isInteger(degrees / (360 / gameOptions.slices))) {
+    if (Number.isInteger(degrees / (360 / this.slices))) {
       degrees++ // increase deg to go to next slice
     }
 
@@ -175,25 +161,25 @@ class WheelOfFortune extends PIXI.Container {
     // add percent of cycle in rads to display correct result (this depends on the position of the marker)
     const rads = ((360 * rounds + degrees) * Math.PI / 180) + Math.PI + 0.314
     // before the wheel ends spinning, we already know the prize according to "degrees" rotation and the number of slices
-    var prize = gameOptions.slices - 1 - Math.floor(degrees / (360 / gameOptions.slices))
+    var prize = this.slices - 1 - Math.floor(degrees / (360 / this.slices))
 
     // reset the rads rotation of the wheel
     this.wheel.rotation = 0
     let edge = 1
     // use tweenmax to spin
-    const spin = TweenMax.to(this.wheel, gameOptions.rotationTime, {
+    const spin = TweenMax.to(this.wheel, this.rotationTime, {
       paused: true,
       rotation: rads,
       ease: Power1.easeOut,
       onUpdate: function () {
-        if ((parseInt((this.target.rotation + 0.314) * 180 / Math.PI) >= (360 / gameOptions.slices) * edge)) {
+        if ((parseInt((this.target.rotation + 0.314) * 180 / Math.PI) >= (360 / this.slices) * edge)) {
           tl.restart()
           edge++
         }
       },
       onComplete: () => {
         // displaying prize text
-        this.prizeText.setText(gameOptions.slicePrizes[prize])
+        this.prizeText.setText(this.slicePrizes[prize])
         // show the hl
         this.showWin()
         // player can spin again
@@ -210,7 +196,7 @@ class WheelOfFortune extends PIXI.Container {
       rotation: -2,
       ease: Power1.easeOut,
       onUpdate: function () {
-        if ((parseInt((this.target.rotation + 0.314) * 180 / Math.PI) >= (360 / gameOptions.slices) * edge)) {
+        if ((parseInt((this.target.rotation + 0.314) * 180 / Math.PI) >= (360 / this.slices) * edge)) {
           tl.restart()
           edge++
         }
