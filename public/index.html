@@ -1,25 +1,54 @@
 <!DOCTYPE html>
 <html>
-	<head>
-        <style type = "text/css">
-            body{
-                background: #000000;
-                padding: 0px;
-                margin: 0px;
-            }
-            canvas{
-                display:block;
-                margin: 0;
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-            }
-        </style>
-        <script src = "https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.8.8/pixi.min.js"></script>
-        <script src = "https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js"></script>
-        <script src = "./js/game.js"></script>
-    </head>
-	<body>
-	</body>
+
+<head>
+  <style type="text/css">
+    body {
+      background: #000000;
+      padding: 0px;
+      margin: 0px;
+    }
+
+    canvas {
+      display: block;
+      margin: 0;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.8.8/pixi.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js"></script>
+  <script src="./js/game.js"></script>
+  <script>
+    var client = new WebSocket('ws:/localhost:8080')
+    client.onmessage = (e = {}) => {
+      let {
+        data
+      } = e
+      if (!data) return
+      data = JSON.parse(data)
+      const {
+        action
+      } = data
+      if (!action) {
+        console.warn("mantadory field 'action' missing")
+        return
+      }
+      switch (action) {
+        case 'reload':
+          location.reload()
+          break;
+        default:
+          break;
+      }
+
+    }
+  </script>
+</head>
+
+<body>
+</body>
+
 </html>

@@ -57,6 +57,7 @@ class WheelOfFortune extends PIXI.Container {
     this.interactive = true
     this.buttonMode = true
   }
+
   // method to load resources
   preload (callback) {
     // loading assets
@@ -75,6 +76,9 @@ class WheelOfFortune extends PIXI.Container {
     }, {
       key: 'wheel-shade',
       source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/wheel-shade.png'
+    }, {
+      key: 'win-highlight',
+      source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/win-highlight.png'
     }]
 
     resources.forEach(r => {
@@ -102,6 +106,13 @@ class WheelOfFortune extends PIXI.Container {
     this.wheel.y = game.config.height / 2
     this.wheel.anchor.set(0.5)
 
+    this.winHl = this.addChild(new PIXI.Sprite.fromImage('win-highlight'))
+    this.winHl.x = 551 + this.winHl.width / 2
+    this.winHl.y = 80 + this.winHl.height + 30
+    this.winHl.pivot.y = this.winHl.height + 30
+    this.winHl.pivot.x = this.winHl.width / 2
+    this.winHl.visible = false
+
     // adding the pin in the middle of the canvas
     this.pin = this.addChild(new PIXI.Sprite.fromImage('pin'))
     this.pin.x = game.config.width / 2
@@ -123,6 +134,9 @@ class WheelOfFortune extends PIXI.Container {
     centralFrame.x = 1280 / 2 - centralFrame.width / 2
     centralFrame.y = 720 / 2 - centralFrame.height / 2
 
+    // winHl.x = -winHl.width / 2
+    // winHl.y = -winHl.height - 25
+
     // the game has just started = we can spin the wheel
     this.canSpin = true
 
@@ -136,6 +150,8 @@ class WheelOfFortune extends PIXI.Container {
     if (!this.canSpin) return
     // now the wheel cannot spin because it's already spinning
     this.canSpin = false
+    // hide hl image
+    this.winHl.visible = false
 
     if (isNaN(deg)) deg = null
 
@@ -156,17 +172,17 @@ class WheelOfFortune extends PIXI.Container {
     }
 
     // convert degrees to rads cause pixi rotation works with rads
-    const rads = ((360 * rounds + degrees) * Math.PI / 180) + Math.PI + 0.314 // add percent of cycle in rads to display correct result (this depends on the position of the marker)
-
+    // add percent of cycle in rads to display correct result (this depends on the position of the marker)
+    const rads = ((360 * rounds + degrees) * Math.PI / 180) + Math.PI + 0.314
     // before the wheel ends spinning, we already know the prize according to "degrees" rotation and the number of slices
     var prize = gameOptions.slices - 1 - Math.floor(degrees / (360 / gameOptions.slices))
 
     // reset the rads rotation of the wheel
     this.wheel.rotation = 0
-    const pin = this.pin
     let edge = 1
     // use tweenmax to spin
-    this.tween = TweenMax.to(this.wheel, gameOptions.rotationTime, {
+    const spin = TweenMax.to(this.wheel, gameOptions.rotationTime, {
+      paused: true,
       rotation: rads,
       ease: Power1.easeOut,
       onUpdate: function () {
@@ -178,45 +194,51 @@ class WheelOfFortune extends PIXI.Container {
       onComplete: () => {
         // displaying prize text
         this.prizeText.setText(gameOptions.slicePrizes[prize])
-
+        // show the hl
+        this.showWin()
         // player can spin again
         this.canSpin = true
       }
     })
     // this emulates the pin bouncing left-right
     var tl = new TimelineMax({ paused: true, ease: Power4.easeOut, onComplete: () => TweenMax.to(this.pin, 0.05, { rotation: 0 }) })
-      .to(this.pin, 0.05, { rotation: -0.1 })
-      .to(this.pin, 0.05, { rotation: 0.1 })
-  }
-  rotate () {
-    if (!this.canSpin) return
+      .to(this.pin, 0.05, { rotation: -0.15 })
+      .to(this.pin, 0.05, { rotation: 0.15 })
 
-    this.prizeText.setText('')
-
-    this.canSpin = false
-    this.wheel.rotation = 0
-    // use tweenmax to spin
-    const _this = this
-    this.tween = TweenMax.to(this.wheel, 100, {
-      rotation: 30, // add percent of cycle in rads to display correct result (this depends on the position of the marker)
-      ease: Linear.easeNone,
+    // spin backwards on start
+    TweenMax.to(this.wheel, 0.5, {
+      rotation: -2,
+      ease: Power1.easeOut,
       onUpdate: function () {
-        // const rads = this.target.rotation - 0.314
-        // let degrees = (rads * 180 / Math.PI)
-        // degrees = degrees - 360 * Math.floor((degrees / 360))
-
-        // var prize = gameOptions.slices - 1 - Math.floor(degrees / (360 / gameOptions.slices))
-        // _this.prizeText.setText(gameOptions.slicePrizes[prize])
-        // console.log(gameOptions.slicePrizes[prize], rads, degrees, prize)
+        if ((parseInt((this.target.rotation + 0.314) * 180 / Math.PI) >= (360 / gameOptions.slices) * edge)) {
+          tl.restart()
+          edge++
+        }
       },
       onComplete: () => {
-        // displaying prize text
-        // this.prizeText.setText(gameOptions.slicePrizes[prize]);
-
-        // player can spin again
-        this.canSpin = true
+        spin.play() // trigger the main spin
       }
     })
+  }
+
+  showWin () {
+    const calcHlPosition = () => {
+      const rad = this.wheel.rotation
+      const deg = rad * 180 / Math.PI
+
+      const a = deg - parseInt(deg / 360) * 360
+      const b = a - parseInt(a / 18) * 18
+
+      let r = b * Math.PI / 180
+      // in case of odd number we have to subtract 18 degs from rads
+      if ((parseInt(a / 18) % 2)) {
+        r -= 0.32
+      }
+      this.winHl.rotation = r
+    }
+
+    calcHlPosition()
+    setTimeout(() => (this.winHl.visible = true), 100)
   }
 }
 
