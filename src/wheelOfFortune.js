@@ -1,5 +1,6 @@
 // Wheel Of Fortune scene
-const { Sprite, Container, AnimatedSprite, BitmapText, randInt, newArray } = window.px
+import { Coin, coinFieldEffect } from './coin'
+const { Sprite, Container, AnimatedSprite, BitmapText } = window.px
 console.warn('WheelOfFortune loaded')
 class WheelOfFortune extends Container {
   // constructor
@@ -57,7 +58,7 @@ class WheelOfFortune extends Container {
   // method to be executed once the scene has been created
   create () {
     this.addChild(Sprite.fromImage('background'))
-    const wheelShade = this.addChild(new Sprite('wheel-shade.png', 640, 380, 1))
+    const wheelShade = this.addChild(new Sprite('wheel-shade.png', 640, 380, 2))
     wheelShade.anchor.set(0.5)
     // adding the wheel in the middle of the canvas
     this.wheel = this.addChild(new Sprite('spin-wheel.png', 640, 360, 2))
@@ -94,6 +95,21 @@ class WheelOfFortune extends Container {
     this.panelAnimation.animationSpeed = 0.4
     this.winText = this.addChild(new BitmapText('', { font: '120px wof-font' }, 640, 445, 5)).hide()
 
+    this.coins = []
+    for (var i = 0; i < 50; i++) {
+      this.coins.push(this.addChild(new Coin([PIXI.loader.resources['coin-flip'].spritesheet.animations.coin, 640, 360, 1, true])))
+    }
+  }
+
+  clear () {
+    this.winHl.hide()
+    this.winAnimation.hide()
+    this.winText.setText('').hide()
+    this.panelAnimation.hide()
+    this.coins.forEach(c => c.hide())
+    if (this.coinsEffect) {
+      this.coinsEffect.render = false
+    }
   }
 
   // function to spin the wheel
@@ -104,11 +120,7 @@ class WheelOfFortune extends Container {
     // now the wheel cannot spin because it's already spinning
     this.canSpin = false
 
-    // hide hl image
-    this.winHl.hide()
-    this.winAnimation.hide()
-    this.winText.setText('').hide()
-    this.panelAnimation.hide()
+    this.clear()
 
     if (isNaN(deg)) deg = null
 
@@ -185,11 +197,18 @@ class WheelOfFortune extends Container {
     }
 
     calcHlPosition()
-    setTimeout(() => (this.winHl.show()), 100)
-    this.winText.setText(this.prize.toFixed(2))
-    this.winText.show()
-    this.winAnimation.play()
-    this.panelAnimation.play()
+
+    const main = () => {
+      this.winText.setText(this.prize.toFixed(2))
+      this.winText.show()
+      this.winAnimation.play()
+      this.panelAnimation.play()
+      this.coins.forEach(c => c.play())
+      this.coinsEffect = coinFieldEffect(this.coins)
+    }
+
+    setTimeout(() => this.winHl.show(), 200)
+    setTimeout(main.bind(this), 1000)
   }
 }
 
