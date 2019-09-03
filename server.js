@@ -19,6 +19,6 @@ wss.on('connection', ws => {
   })
 })
 
-fs.watch('./public/js', () => {
+fs.watch('./src/', () => {
   wss.clients.forEach(c => c.send(JSON.stringify({ action: 'reload' })))
 })

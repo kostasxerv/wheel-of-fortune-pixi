@@ -7,14 +7,14 @@ const mainFiles = getFiles('./src', 'js')
 
 module.exports = {
   entry: {
-    app: mainFiles
+    wof: mainFiles
   },
   devtool: 'inline-source-map',
   mode: 'development',
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      template: './index.html'
+      template: './public/index.html'
     })
   ],
   output: {
@@ -45,9 +45,9 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js']
   },
   devServer: {
-    contentBase: path.join(__dirname, 'dist'),
+    contentBase: path.join(__dirname, 'public'),
     compress: true,
     host: '10.0.0.83',
-    port: 8000
+    port: 3001
   }
 }

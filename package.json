@@ -30,8 +30,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "build": "webpack --config ./webpack.prod.js"
+    "start": "webpack-dev-server --open",
+    "build": "webpack --config ./webpack.prod.js",
+    "watch": "webpack --watch"
   },
   "repository": {
     "type": "git",

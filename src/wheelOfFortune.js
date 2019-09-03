@@ -1,7 +1,6 @@
 // Wheel Of Fortune scene
-const Sprite = window.px.Sprite || PIXI.Sprite
-const Container = window.px.Container || PIXI.Container
-
+const { Sprite, Container, PixiText } = window.px
+console.warn('WheelOfFortune loaded')
 class WheelOfFortune extends Container {
   // constructor
   constructor () {
@@ -57,42 +56,31 @@ class WheelOfFortune extends Container {
 
   // method to be executed once the scene has been created
   create () {
-    this.addChild(new Sprite.fromImage('background'))
-    const wheelShade = this.addChild(new Sprite.fromImage('wheel-shade'))
-    wheelShade.x = 1280 / 2
-    wheelShade.y = 720 / 2 + 20
+    this.addChild(Sprite.fromImage('background'))
+    const wheelShade = this.addChild(new Sprite('wheel-shade', 640, 380))
     wheelShade.anchor.set(0.5)
     // adding the wheel in the middle of the canvas
-    this.wheel = this.addChild(new Sprite.fromImage('wheel'))
-    this.wheel.x = 1280 / 2
-    this.wheel.y = 720 / 2
+    this.wheel = this.addChild(new Sprite('wheel', 640, 360))
     this.wheel.anchor.set(0.5)
 
-    this.winHl = this.addChild(new Sprite.fromImage('win-highlight'))
+    this.winHl = this.addChild(new Sprite('win-highlight'))
     this.winHl.x = 551 + this.winHl.width / 2
     this.winHl.y = 80 + this.winHl.height + 30
     this.winHl.pivot.y = this.winHl.height + 30
     this.winHl.pivot.x = this.winHl.width / 2
-    this.winHl.visible = false
 
     // adding the pin in the middle of the canvas
-    this.pin = this.addChild(new Sprite.fromImage('pin'))
-    this.pin.x = 1280 / 2
-    this.pin.y = 35
+    this.pin = this.addChild(new Sprite('pin', 640, 35))
     this.pin.anchor.set(0.5, 0)
 
     // adding the text field
-    this.prizeText = this.addChild(new PIXI.Text('Spin the wheel', {
-      fontFamily: 'Arial',
+    this.prizeText = this.addChild(new PixiText(1280 / 2, 690, 2, 'Spin the wheel', 200, {
       fontSize: 32,
-      align: 'center',
       fill: 'white'
     }))
-    this.prizeText.anchor.set(0.5)
-    this.prizeText.x = 1280 / 2
-    this.prizeText.y = 690
+    // this.prizeText.anchor.set(0.5)
 
-    const centralFrame = this.addChild(new Sprite.fromImage('central-frame'))
+    const centralFrame = this.addChild(new Sprite('central-frame'))
     centralFrame.x = 1280 / 2 - centralFrame.width / 2
     centralFrame.y = 720 / 2 - centralFrame.height / 2
 
@@ -115,7 +103,7 @@ class WheelOfFortune extends Container {
     if (isNaN(deg)) deg = null
 
     // resetting text field
-    this.prizeText.text = ''
+    this.prizeText.text = 'Good Luck!'
 
     // the wheel will spin round from 2 to 4 times. This is just coreography
     // var rounds = Math.max(5, Math.floor(Math.random() * 8))
