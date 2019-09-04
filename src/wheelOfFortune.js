@@ -9,7 +9,9 @@ class WheelOfFortune extends Container {
     this.loader = PIXI.loader
 
     this.rotationTime = 5
-    this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, 10, 1000]
+    // this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, 10, 1000]
+    this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, '?', 10, 1000]
+
     this.preload(this.create.bind(this))
 
     this.interactive = true
@@ -25,7 +27,7 @@ class WheelOfFortune extends Container {
     // loading assets
     const resources = [{
       key: 'wheel',
-      source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/wheel.json'
+      source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/wof.json'
     }, {
       key: 'background',
       source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/background.jpg'
@@ -61,22 +63,28 @@ class WheelOfFortune extends Container {
     const wheelShade = this.addChild(new Sprite('wheel-shade.png', 640, 380, 2))
     wheelShade.anchor.set(0.5)
     // adding the wheel in the middle of the canvas
-    this.wheel = this.addChild(new Sprite('spin-wheel.png', 640, 360, 2))
+    this.wheel = this.addChild(new Sprite(`spin-wheel-${this.slices}.png`, 640, 360, 2))
     this.wheel.anchor.set(0.5)
 
-    this.winHl = this.addChild(new Sprite('win-highlight.png', 0, 0, 3)).hide()
-    this.winHl.x = 551 + this.winHl.width / 2
-    this.winHl.y = 80 + this.winHl.height + 30
-    this.winHl.pivot.y = this.winHl.height + 30
-    this.winHl.pivot.x = this.winHl.width / 2
+    this.winHl = this.addChild(new Sprite(`win-highlight-${this.slices}.png`, 0, 0, 3)).hide()
+    this.winHl.x = 1280 / 2 + 1
+    this.winHl.y = 205
+    this.winHl.anchor.set(0.5)
 
     // adding the pin in the middle of the canvas
     this.pin = this.addChild(new Sprite('pointer.png', 640, 35, 4))
     this.pin.anchor.set(0.5, 0)
+    // this emulates the pin bouncing left-right
+    this.pin.bounce = new TimelineMax({ paused: true, ease: Power4.easeOut, onComplete: () => TweenMax.to(this.pin, 0.05, { rotation: 0 }) })
+      .to(this.pin, 0.05, { rotation: -0.15 })
+      .to(this.pin, 0.05, { rotation: 0.15 })
+    this.pin.bounceReverse = new TimelineMax({ paused: true, ease: Power4.easeOut, onComplete: () => TweenMax.to(this.pin, 0.05, { rotation: 0 }) })
+      .to(this.pin, 0.05, { rotation: 0.15 })
+      .to(this.pin, 0.05, { rotation: -0.15 })
 
-    const centralFrame = this.addChild(new Sprite('central-frame.png', 0, 0, 4))
-    centralFrame.x = 1280 / 2 - centralFrame.width / 2
-    centralFrame.y = 720 / 2 - centralFrame.height / 2
+    this.centralFrame = this.addChild(new Sprite('central-frame.png', 0, 0, 4))
+    this.centralFrame.x = 1280 / 2 - this.centralFrame.width / 2
+    this.centralFrame.y = 720 / 2 - this.centralFrame.height / 2
 
     // the game has just started = we can spin the wheel
     this.canSpin = true
@@ -145,7 +153,7 @@ class WheelOfFortune extends Container {
   }
 
   // function to spin the wheel
-  spinWheel (deg) {
+  spinWheel () {
     // can we spin the wheel?
     if (!this.canSpin) return
     clearInterval(this.startUpHl)
@@ -155,30 +163,22 @@ class WheelOfFortune extends Container {
 
     this.clear()
 
-    if (isNaN(deg)) deg = null
-
-    // the wheel will spin round from 2 to 4 times. This is just coreography
     // var rounds = Math.max(5, Math.floor(Math.random() * 8))
-    var rounds = 4.5
+    var rounds = 4
 
-    // then will rotate by a random number from 0 to 360 degrees. This is the actual spin
-    var degrees = deg || Math.floor(Math.random() * 360)
-    degrees = degrees - 360 * Math.floor((degrees / 360))
+    const prizeIdx = Math.floor(Math.random() * this.slicePrizes.length)
+    this.prize = this.slicePrizes[prizeIdx]
 
-    // fix consflict result between 2 slices
-    if (Number.isInteger(degrees / (360 / this.slices))) {
-      degrees++ // increase deg to go to next slice
-    }
+    const degrees = rounds * 360 + (this.slices - prizeIdx) * (360 / this.slices)
 
     // convert degrees to rads cause pixi rotation works with rads
     // add percent of cycle in rads to display correct result (this depends on the position of the marker)
-    const rads = ((360 * rounds + degrees) * Math.PI / 180) + Math.PI + 0.314
-    // before the wheel ends spinning, we already know the prize according to "degrees" rotation and the number of slices
-    var prizeIdx = this.slices - 1 - Math.floor(degrees / (360 / this.slices))
-    this.prize = this.slicePrizes[prizeIdx]
+    const rads = degrees.toRad()
+    const slideRads = (360 / (this.slices) * 2).toRad()
     // reset the rads rotation of the wheel
     this.wheel.rotation = 0
-    let edge = 1
+    // this is used to do physics with pointer bounce
+    let edge = 0
     const _this = this
     // use tweenmax to spin
     const spin = TweenMax.to(this.wheel, this.rotationTime, {
@@ -186,26 +186,29 @@ class WheelOfFortune extends Container {
       rotation: rads,
       ease: Power1.easeOut,
       onUpdate: function () {
-        if ((parseInt((this.target.rotation + 0.314) * 180 / Math.PI) >= (360 / _this.slices) * edge)) {
-          pinBounce.restart()
+        if (parseInt((this.target.rotation + (slideRads / 2)).toDeg()) >= (360 / _this.slices) * edge) {
+          _this.pin.bounce.restart()
           edge++
         }
       },
       onComplete: () => {
-        // show the hl
+        // show the win
         this.showWin()
       }
     })
-    // this emulates the pin bouncing left-right
-    var pinBounce = new TimelineMax({ paused: true, ease: Power4.easeOut, onComplete: () => TweenMax.to(this.pin, 0.05, { rotation: 0 }) })
-      .to(this.pin, 0.05, { rotation: -0.15 })
-      .to(this.pin, 0.05, { rotation: 0.15 })
 
     // spin backwards on start
     TweenMax.to(this.wheel, 0.5, {
       rotation: -2,
       ease: Power1.easeOut,
+      onUpdate: function () {
+        if (parseInt((this.target.rotation + (slideRads / 2)).toDeg()) <= (360 / _this.slices) * edge) {
+          _this.pin.bounceReverse.restart()
+          edge--
+        }
+      },
       onComplete: () => {
+        edge++ // increase edge cause already bounced in this slice
         spin.play() // trigger the main spin
       }
     })
