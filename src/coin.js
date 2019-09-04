@@ -51,7 +51,6 @@ export class Coin extends AnimatedSprite {
   }
 
   animate () {
-    this.show()
     // reset component position
     if (this.pos.z < cameraZ) this.randomize()
 

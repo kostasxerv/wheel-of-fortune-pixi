@@ -99,6 +99,8 @@ class WheelOfFortune extends Container {
     for (var i = 0; i < 50; i++) {
       this.coins.push(this.addChild(new Coin([PIXI.loader.resources['coin-flip'].spritesheet.animations.coin, 640, 360, 1, true])))
     }
+
+    this.cache()
   }
 
   clear () {
@@ -154,19 +156,17 @@ class WheelOfFortune extends Container {
       ease: Power1.easeOut,
       onUpdate: function () {
         if ((parseInt((this.target.rotation + 0.314) * 180 / Math.PI) >= (360 / _this.slices) * edge)) {
-          tl.restart()
+          pinBounce.restart()
           edge++
         }
       },
       onComplete: () => {
         // show the hl
         this.showWin()
-        // player can spin again
-        this.canSpin = true
       }
     })
     // this emulates the pin bouncing left-right
-    var tl = new TimelineMax({ paused: true, ease: Power4.easeOut, onComplete: () => TweenMax.to(this.pin, 0.05, { rotation: 0 }) })
+    var pinBounce = new TimelineMax({ paused: true, ease: Power4.easeOut, onComplete: () => TweenMax.to(this.pin, 0.05, { rotation: 0 }) })
       .to(this.pin, 0.05, { rotation: -0.15 })
       .to(this.pin, 0.05, { rotation: 0.15 })
 
@@ -197,18 +197,41 @@ class WheelOfFortune extends Container {
     }
 
     calcHlPosition()
+    this.winAnimation.zOrder = 5
+    this.panelAnimation.zOrder = 5
+    this.sortChildren()
 
     const main = () => {
       this.winText.setText(this.prize.toFixed(2))
       this.winText.show()
+      this.winAnimation.fadeIn()
       this.winAnimation.play()
+      this.panelAnimation.fadeIn()
       this.panelAnimation.play()
       this.coins.forEach(c => c.play())
+      this.coins.forEach(c => c.fadeIn())
       this.coinsEffect = coinFieldEffect(this.coins)
+      // player can spin again
+      this.canSpin = true
     }
 
-    setTimeout(() => this.winHl.show(), 200)
-    setTimeout(main.bind(this), 1000)
+    setTimeout(this.winHl.show.bind(this.winHl), 100)
+    setTimeout(this.winHl.hide.bind(this.winHl), 300)
+    setTimeout(this.winHl.show.bind(this.winHl), 500)
+    setTimeout(this.winHl.hide.bind(this.winHl), 700)
+    setTimeout(this.winHl.show.bind(this.winHl), 900)
+
+    setTimeout(main.bind(this), 1100)
+  }
+
+  // this method play animations on start to cache on gpu
+  // and solve the lag problem on first play
+  cache () {
+    this.winAnimation.zOrder = 0.1
+    this.panelAnimation.zOrder = 0.1
+    this.sortChildren()
+    this.winAnimation.play()
+    this.panelAnimation.play()
   }
 }
 
