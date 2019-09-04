@@ -100,7 +100,35 @@ class WheelOfFortune extends Container {
       this.coins.push(this.addChild(new Coin([PIXI.loader.resources['coin-flip'].spritesheet.animations.coin, 640, 360, 1, true])))
     }
 
+    this.lights = []
+
+    this.lights.push(this.wheel.addChild(new Sprite('light.png', -196, -260, 4)))
+    this.lights.push(this.wheel.addChild(new Sprite('light.png', -25, -315, 4)))
+    this.lights.push(this.wheel.addChild(new Sprite('light.png', 146, -260, 4)))
+    this.lights.push(this.wheel.addChild(new Sprite('light.png', 252, -121, 4)))
+    this.lights.push(this.wheel.addChild(new Sprite('light.png', 252, 70, 4)))
+    this.lights.push(this.wheel.addChild(new Sprite('light.png', 147, 212, 4)))
+    this.lights.push(this.wheel.addChild(new Sprite('light.png', -49 / 2, 267, 4)))
+    this.lights.push(this.wheel.addChild(new Sprite('light.png', -197, 210, 4)))
+    this.lights.push(this.wheel.addChild(new Sprite('light.png', -300, 70, 4)))
+    this.lights.push(this.wheel.addChild(new Sprite('light.png', -300, -118, 4)))
+
+    this.lights.forEach(l => l.hide())
     this.cache()
+
+    this.startup()
+  }
+
+  startup () {
+    let i = 0
+    this.startUpHl = setInterval(() => {
+      this.lights.forEach(l => l.hide())
+      this.lights[i].show()
+      i++
+      if (i === this.lights.length) {
+        i = 0
+      }
+    }, 100)
   }
 
   clear () {
@@ -108,6 +136,8 @@ class WheelOfFortune extends Container {
     this.winAnimation.hide()
     this.winText.setText('').hide()
     this.panelAnimation.hide()
+    clearInterval(this.flashingLights)
+    this.lights.forEach(l => l.hide())
     this.coins.forEach(c => c.hide())
     if (this.coinsEffect) {
       this.coinsEffect.render = false
@@ -118,7 +148,8 @@ class WheelOfFortune extends Container {
   spinWheel (deg) {
     // can we spin the wheel?
     if (!this.canSpin) return
-
+    clearInterval(this.startUpHl)
+    this.lights.forEach(l => l.hide())
     // now the wheel cannot spin because it's already spinning
     this.canSpin = false
 
@@ -181,33 +212,36 @@ class WheelOfFortune extends Container {
   }
 
   showWin () {
-    const calcHlPosition = () => {
-      const rad = this.wheel.rotation
-      const deg = rad * 180 / Math.PI
+    // const calcHlPosition = () => {
+    //   const rad = this.wheel.rotation
+    //   const deg = rad * 180 / Math.PI
 
-      const a = deg - parseInt(deg / 360) * 360
-      const b = a - parseInt(a / 18) * 18
+    //   const a = deg - parseInt(deg / 360) * 360
+    //   const b = a - parseInt(a / 18) * 18
 
-      let r = b * Math.PI / 180
-      // in case of odd number we have to subtract 18 degs from rads
-      if ((parseInt(a / 18) % 2)) {
-        r -= 0.32
-      }
-      this.winHl.rotation = r
-    }
+    //   let r = b * Math.PI / 180
+    //   // in case of odd number we have to subtract 18 degs from rads
+    //   if ((parseInt(a / 18) % 2)) {
+    //     r -= 0.32
+    //   }
+    //   this.winHl.rotation = r
+    // }
 
-    calcHlPosition()
     this.winAnimation.zOrder = 5
     this.panelAnimation.zOrder = 5
     this.sortChildren()
 
     const main = () => {
-      this.winText.setText(this.prize.toFixed(2))
-      this.winText.show()
+      if (!isNaN(this.prize)) {
+        this.winText.setText(this.prize.toFixed(2))
+        this.winText.show()
+        this.panelAnimation.fadeIn()
+        this.panelAnimation.play()
+      }
+
       this.winAnimation.fadeIn()
       this.winAnimation.play()
-      this.panelAnimation.fadeIn()
-      this.panelAnimation.play()
+
       this.coins.forEach(c => c.play())
       this.coins.forEach(c => c.fadeIn())
       this.coinsEffect = coinFieldEffect(this.coins)
@@ -220,6 +254,10 @@ class WheelOfFortune extends Container {
     setTimeout(this.winHl.show.bind(this.winHl), 500)
     setTimeout(this.winHl.hide.bind(this.winHl), 700)
     setTimeout(this.winHl.show.bind(this.winHl), 900)
+
+    this.flashingLights = setInterval(() => {
+      this.lights.forEach(l => (l.visible ? l.hide() : l.show()))
+    }, 200)
 
     setTimeout(main.bind(this), 1100)
   }
