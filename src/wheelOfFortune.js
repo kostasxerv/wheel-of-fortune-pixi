@@ -12,6 +12,32 @@ class WheelOfFortune extends Container {
     // this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, 10, 1000]
     this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, '?', 10, 1000]
 
+    this.lightsCoords = this.slices === 11 ? [
+      { x: 0, y: -291 },
+      { x: 158, y: -245 },
+      { x: 266, y: -120 },
+      { x: 289, y: 43 },
+      { x: 221, y: 192 },
+      { x: 82, y: 280 },
+      { x: -82, y: 280 },
+      { x: -221, y: 192 },
+      { x: -289, y: 43 },
+      { x: -266, y: -120 },
+      { x: -158, y: -245 }
+    ]
+      : [
+        { x: 0, y: -291 },
+        { x: 173, y: -236 },
+        { x: 276, y: -96 },
+        { x: 276, y: 96 },
+        { x: 173, y: 236 },
+        { x: 0, y: 291 },
+        { x: -173, y: 236 },
+        { x: -276, y: 96 },
+        { x: -276, y: -96 },
+        { x: -173, y: -236 }
+
+      ]
     this.preload(this.create.bind(this))
 
     this.interactive = true
@@ -109,19 +135,14 @@ class WheelOfFortune extends Container {
     }
 
     this.lights = []
+    this.lightsCoords.forEach(o => {
+      const { x, y } = o
+      const l = this.wheel.addChild(new Sprite('light.png', x, y, 4))
+      l.hide()
+      l.anchor.set(0.5)
+      this.lights.push(l)
+    })
 
-    this.lights.push(this.wheel.addChild(new Sprite('light.png', -196, -260, 4)))
-    this.lights.push(this.wheel.addChild(new Sprite('light.png', -25, -315, 4)))
-    this.lights.push(this.wheel.addChild(new Sprite('light.png', 146, -260, 4)))
-    this.lights.push(this.wheel.addChild(new Sprite('light.png', 252, -121, 4)))
-    this.lights.push(this.wheel.addChild(new Sprite('light.png', 252, 70, 4)))
-    this.lights.push(this.wheel.addChild(new Sprite('light.png', 147, 212, 4)))
-    this.lights.push(this.wheel.addChild(new Sprite('light.png', -49 / 2, 267, 4)))
-    this.lights.push(this.wheel.addChild(new Sprite('light.png', -197, 210, 4)))
-    this.lights.push(this.wheel.addChild(new Sprite('light.png', -300, 70, 4)))
-    this.lights.push(this.wheel.addChild(new Sprite('light.png', -300, -118, 4)))
-
-    this.lights.forEach(l => l.hide())
     this.cache()
 
     this.startup()
@@ -161,9 +182,10 @@ class WheelOfFortune extends Container {
     // now the wheel cannot spin because it's already spinning
     this.canSpin = false
 
+    // clear win animations
     this.clear()
 
-    // var rounds = Math.max(5, Math.floor(Math.random() * 8))
+    // set the times of spin
     var rounds = 4
 
     const prizeIdx = Math.floor(Math.random() * this.slicePrizes.length)
@@ -172,7 +194,6 @@ class WheelOfFortune extends Container {
     const degrees = rounds * 360 + (this.slices - prizeIdx) * (360 / this.slices)
 
     // convert degrees to rads cause pixi rotation works with rads
-    // add percent of cycle in rads to display correct result (this depends on the position of the marker)
     const rads = degrees.toRad()
     const slideRads = (360 / (this.slices) * 2).toRad()
     // reset the rads rotation of the wheel
@@ -215,21 +236,7 @@ class WheelOfFortune extends Container {
   }
 
   showWin () {
-    // const calcHlPosition = () => {
-    //   const rad = this.wheel.rotation
-    //   const deg = rad * 180 / Math.PI
-
-    //   const a = deg - parseInt(deg / 360) * 360
-    //   const b = a - parseInt(a / 18) * 18
-
-    //   let r = b * Math.PI / 180
-    //   // in case of odd number we have to subtract 18 degs from rads
-    //   if ((parseInt(a / 18) % 2)) {
-    //     r -= 0.32
-    //   }
-    //   this.winHl.rotation = r
-    // }
-
+    // bring animations to front
     this.winAnimation.zOrder = 5
     this.panelAnimation.zOrder = 5
     this.sortChildren()
