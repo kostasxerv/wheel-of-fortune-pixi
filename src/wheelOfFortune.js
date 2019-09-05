@@ -86,8 +86,12 @@ class WheelOfFortune extends Container {
   // method to be executed once the scene has been created
   create () {
     this.addChild(Sprite.fromImage('background'))
+
     const wheelShade = this.addChild(new Sprite('wheel-shade.png', 640, 380, 2))
     wheelShade.anchor.set(0.5)
+
+    this.srcLight = this.addChild(new Sprite('source-light.png', 640, 360, 2)).hide()
+    this.srcLight.anchor.set(0.5)
     // adding the wheel in the middle of the canvas
     this.wheel = this.addChild(new Sprite(`spin-wheel-${this.slices}.png`, 640, 360, 2))
     this.wheel.anchor.set(0.5)
@@ -162,6 +166,7 @@ class WheelOfFortune extends Container {
 
   clear () {
     this.winHl.hide()
+    this.srcLight.hide()
     this.winAnimation.hide()
     this.winText.setText('').hide()
     this.panelAnimation.hide()
@@ -244,13 +249,15 @@ class WheelOfFortune extends Container {
     const main = () => {
       if (!isNaN(this.prize)) {
         this.winText.setText(this.prize.toFixed(2))
-        this.winText.show()
+        this.winText.fadeIn()
         this.panelAnimation.fadeIn()
         this.panelAnimation.play()
       }
 
       this.winAnimation.fadeIn()
       this.winAnimation.play()
+
+      this.srcLight.fadeIn({ duration: 0.5 })
 
       this.coins.forEach(c => c.play())
       this.coins.forEach(c => c.fadeIn())
