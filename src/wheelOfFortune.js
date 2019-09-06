@@ -8,7 +8,7 @@ class WheelOfFortune extends Container {
     super()
     this.loader = PIXI.loader
 
-    this.rotationTime = 5
+    this.rotationTime = 6
     // this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, 10, 1000]
     this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, '?', 10, 1000]
 
@@ -176,6 +176,9 @@ class WheelOfFortune extends Container {
     if (this.coinsEffect) {
       this.coinsEffect.render = false
     }
+
+    this.canSpin = true
+    this.interactive = true
   }
 
   // function to spin the wheel
@@ -184,11 +187,10 @@ class WheelOfFortune extends Container {
     if (!this.canSpin) return
     clearInterval(this.startUpHl)
     this.lights.forEach(l => l.hide())
+
     // now the wheel cannot spin because it's already spinning
     this.canSpin = false
-
-    // clear win animations
-    this.clear()
+    this.interactive = false
 
     // set the times of spin
     var rounds = 4
@@ -200,7 +202,7 @@ class WheelOfFortune extends Container {
 
     // convert degrees to rads cause pixi rotation works with rads
     const rads = degrees.toRad()
-    const slideRads = (360 / (this.slices) * 2).toRad()
+    const slideRads = (360 / this.slices).toRad()
     // reset the rads rotation of the wheel
     this.wheel.rotation = 0
     // this is used to do physics with pointer bounce
@@ -210,9 +212,9 @@ class WheelOfFortune extends Container {
     const spin = TweenMax.to(this.wheel, this.rotationTime, {
       paused: true,
       rotation: rads,
-      ease: Power1.easeOut,
+      ease: Power3.easeOut,
       onUpdate: function () {
-        if (parseInt((this.target.rotation + (slideRads / 2)).toDeg()) >= (360 / _this.slices) * edge) {
+        if (parseInt((this.target.rotation + (slideRads / 2)).toDeg()) >= slideRads.toDeg() * edge) {
           _this.pin.bounce.restart()
           edge++
         }
@@ -228,7 +230,7 @@ class WheelOfFortune extends Container {
       rotation: -2,
       ease: Power1.easeOut,
       onUpdate: function () {
-        if (parseInt((this.target.rotation + (slideRads / 2)).toDeg()) <= (360 / _this.slices) * edge) {
+        if (parseInt((this.target.rotation + (slideRads / 2)).toDeg()) <= slideRads.toDeg() * edge) {
           _this.pin.bounceReverse.restart()
           edge--
         }
@@ -238,6 +240,12 @@ class WheelOfFortune extends Container {
         spin.play() // trigger the main spin
       }
     })
+  }
+
+  show () {
+    this.clear()
+    this.alpha = 1
+    this.visible = true
   }
 
   showWin () {
@@ -263,7 +271,12 @@ class WheelOfFortune extends Container {
       this.coins.forEach(c => c.fadeIn())
       this.coinsEffect = coinFieldEffect(this.coins)
       // player can spin again
-      this.canSpin = true
+      // this.canSpin = true
+      this.interactive = true
+      this.once('pointerup', () => {
+        this.fadeOut()
+        this.emit('hide')
+      })
     }
 
     setTimeout(this.winHl.show.bind(this.winHl), 100)
@@ -286,7 +299,17 @@ class WheelOfFortune extends Container {
     this.panelAnimation.zOrder = 0.1
     this.sortChildren()
     this.winAnimation.play()
+    this.panelAnimation.loop = false
     this.panelAnimation.play()
+    this.winAnimation.onComplete = () => {
+      this.winAnimation.hide()
+      this.winAnimation.onComplete = null
+    }
+    this.panelAnimation.onComplete = () => {
+      this.panelAnimation.hide()
+      this.panelAnimation.loop = true
+      this.panelAnimation.onComplete = null
+    }
   }
 }
 
