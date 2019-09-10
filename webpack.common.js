@@ -9,17 +9,15 @@ module.exports = {
   entry: {
     wof: mainFiles
   },
-  devtool: 'inline-source-map',
-  mode: 'development',
   plugins: [
-    new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      template: './public/index.html'
-    })
+    new CleanWebpackPlugin()
+    // new HtmlWebpackPlugin({
+    //   template: './html_template/index.html'
+    // })
   ],
   output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'public/dist')
+    filename: 'js/[name].bundle.js',
+    path: path.resolve(__dirname, 'public_html/')
   },
   module: {
     rules: [
@@ -38,16 +36,17 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/
+      },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          'css-loader'
+        ]
       }
     ]
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js']
-  },
-  devServer: {
-    contentBase: path.join(__dirname, 'public'),
-    compress: true,
-    host: '10.0.0.83',
-    port: 3001
   }
 }

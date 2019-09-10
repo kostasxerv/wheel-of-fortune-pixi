@@ -6,6 +6,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "open": "^6.4.0",
+    "webpack-merge": "^4.2.2",
     "ws": "^7.1.2"
   },
   "devDependencies": {
@@ -30,7 +31,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server --open",
+    "start": "webpack-dev-server --config ./webpack.dev.js --open",
     "build": "webpack --config ./webpack.prod.js",
     "watch": "webpack --watch"
   },

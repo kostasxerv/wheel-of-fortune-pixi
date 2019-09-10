@@ -1,7 +1,6 @@
-// Wheel Of Fortune scene
 import { Coin, coinFieldEffect } from './coin'
 const { Sprite, Container, AnimatedSprite, BitmapText } = window.px
-console.warn('WheelOfFortune loaded')
+
 class WheelOfFortune extends Container {
   // constructor
   constructor () {
@@ -9,8 +8,7 @@ class WheelOfFortune extends Container {
     this.loader = PIXI.loader
 
     this.rotationTime = 6
-    // this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, 10, 1000]
-    this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, '?', 10, 1000]
+    this.slicePrizes = [20, 500, 30, 300, 40, 200, 50, 100, 10, 1000]
 
     this.lightsCoords = this.slices === 11 ? [
       { x: 0, y: -291 },
@@ -53,22 +51,22 @@ class WheelOfFortune extends Container {
     // loading assets
     const resources = [{
       key: 'wheel',
-      source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/wof.json'
+      source: window.urls.cdn + 'wheel-of-fortune/wof.json'
     }, {
       key: 'background',
-      source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/background.jpg'
+      source: window.urls.cdn + 'wheel-of-fortune/background.jpg'
     }, {
       key: 'you-win',
-      source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/animation/you-win.json'
+      source: window.urls.cdn + 'wheel-of-fortune/animation/you-win.json'
     }, {
       key: 'panel-animation',
-      source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/animation/panel-animation.json'
+      source: window.urls.cdn + 'wheel-of-fortune/animation/panel-animation.json'
     }, {
       key: 'coin-flip',
-      source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/animation/coin-flip.json'
+      source: window.urls.cdn + 'wheel-of-fortune/animation/coin-flip.json'
     }, {
       key: 'wof-font',
-      source: 'http://10.0.0.83:3000/dev/wheel-of-fortune/wof-font.xml'
+      source: window.urls.cdn + 'wheel-of-fortune/wof-font.xml'
     }]
 
     resources.forEach(r => {
@@ -81,6 +79,10 @@ class WheelOfFortune extends Container {
     if (typeof callback === 'function') {
       this.loader.onComplete.add(callback)
     }
+  }
+
+  setUp (type) {
+    this.slicePrizes = type === 10 ? [20, 500, 30, 300, 40, 200, 50, 100, 10, 1000] : [20, 500, 30, 300, 40, 200, 50, 100, '?', 10, 1000]
   }
 
   // method to be executed once the scene has been created
